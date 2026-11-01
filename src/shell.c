@@ -60,3 +60,36 @@ char** tokenize(char* cmdline) {
     arglist[argnum] = NULL;
     return arglist;
 }
+char history_list[20][MAX_LEN];
+int history_count = 0;
+
+void add_history(char* cmd) {
+
+    if (history_count < 20) {
+        strcpy(history_list[history_count], cmd);
+        history_count++;
+    }
+    else {
+        for (int i = 0; i < 19; i++) {
+            strcpy(history_list[i], history_list[i + 1]);
+        }
+
+        strcpy(history_list[19], cmd);
+    }
+}
+
+void show_history(void) {
+
+    for (int i = 0; i < history_count; i++) {
+        printf("%d %s\n", i + 1, history_list[i]);
+    }
+}
+
+char* get_history(int number) {
+
+    if (number < 1 || number > history_count) {
+        return NULL;
+    }
+
+    return history_list[number - 1];
+}
