@@ -1,31 +1,47 @@
 #include "shell.h"
 
-char* read_cmd(char* prompt, FILE* fp) {
-    printf("%s", prompt);
-    char* cmdline = (char*) malloc(sizeof(char) * MAX_LEN);
-    int c, pos = 0;
+char my_history_list[20][MAX_LEN];
+int history_count = 0;
 
-    while ((c = getc(fp)) != EOF) {
-        if (c == '\n') break;
-        cmdline[pos++] = c;
+void store_history_command(char* cmd) {
+
+    if (history_count < 20) {
+        strcpy(my_history_list[history_count], cmd);
+        history_count++;
+    }
+    else {
+        for (int i = 0; i < 19; i++) {
+            strcpy(my_history_list[i], my_history_list[i + 1]);
+        }
+
+        strcpy(my_history_list[19], cmd);
+    }
+}
+
+void show_history(void) {
+
+    for (int i = 0; i < history_count; i++) {
+        printf("%d %s\n", i + 1, my_history_list[i]);
+    }
+}
+
+char* get_history(int number) {
+
+    if (number < 1 || number > history_count) {
+        return NULL;
     }
 
-    if (c == EOF && pos == 0) {
-        free(cmdline);
-        return NULL; // Handle Ctrl+D
-    }
-    
-    cmdline[pos] = '\0';
-    return cmdline;
+    return my_history_list[number - 1];
 }
 
 char** tokenize(char* cmdline) {
-    // Edge case: empty command line
+
     if (cmdline == NULL || cmdline[0] == '\0' || cmdline[0] == '\n') {
         return NULL;
     }
 
     char** arglist = (char**)malloc(sizeof(char*) * (MAXARGS + 1));
+
     for (int i = 0; i < MAXARGS + 1; i++) {
         arglist[i] = (char*)malloc(sizeof(char) * ARGLEN);
         bzero(arglist[i], ARGLEN);
@@ -37,59 +53,41 @@ char** tokenize(char* cmdline) {
     int argnum = 0;
 
     while (*cp != '\0' && argnum < MAXARGS) {
-        while (*cp == ' ' || *cp == '\t') cp++; // Skip leading whitespace
-        
-        if (*cp == '\0') break; // Line was only whitespace
+
+        while (*cp == ' ' || *cp == '\t') {
+            cp++;
+        }
+
+        if (*cp == '\0') {
+            break;
+        }
 
         start = cp;
         len = 1;
+
         while (*++cp != '\0' && !(*cp == ' ' || *cp == '\t')) {
             len++;
         }
+
+        if (len >= ARGLEN) {
+            len = ARGLEN - 1;
+        }
+
         strncpy(arglist[argnum], start, len);
         arglist[argnum][len] = '\0';
+
         argnum++;
     }
 
-    if (argnum == 0) { // No arguments were parsed
-        for(int i = 0; i < MAXARGS + 1; i++) free(arglist[i]);
+    if (argnum == 0) {
+        for (int i = 0; i < MAXARGS + 1; i++) {
+            free(arglist[i]);
+        }
+
         free(arglist);
         return NULL;
     }
 
     arglist[argnum] = NULL;
     return arglist;
-}
-char history_list[20][MAX_LEN];
-int history_count = 0;
-
-void add_history(char* cmd) {
-
-    if (history_count < 20) {
-        strcpy(history_list[history_count], cmd);
-        history_count++;
-    }
-    else {
-        for (int i = 0; i < 19; i++) {
-            strcpy(history_list[i], history_list[i + 1]);
-        }
-
-        strcpy(history_list[19], cmd);
-    }
-}
-
-void show_history(void) {
-
-    for (int i = 0; i < history_count; i++) {
-        printf("%d %s\n", i + 1, history_list[i]);
-    }
-}
-
-char* get_history(int number) {
-
-    if (number < 1 || number > history_count) {
-        return NULL;
-    }
-
-    return history_list[number - 1];
 }
