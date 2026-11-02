@@ -15,13 +15,24 @@
 #define MAX_LEN 512
 #define MAXARGS 10
 #define ARGLEN 30
+#define MAX_JOBS 20
 #define PROMPT "FCIT> "
 
+typedef struct {
+    pid_t pid;
+    char command[MAX_LEN];
+} Job;
+
 char** tokenize(char* cmdline);
-int execute(char** arglist);
+int execute(char** arglist, int background, char* command);
 
 void store_history_command(char* cmd);
 void show_history(void);
 char* get_history(int number);
+
+void add_job(pid_t pid, char* command);
+void remove_job(pid_t pid);
+void show_jobs(void);
+void reap_jobs(void);
 
 #endif

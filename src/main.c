@@ -37,12 +37,27 @@ char **my_completion(const char *text, int start, int end) {
 int main() {
     char* cmdline;
     char** arglist;
+    char* command;
+    char* next;
+    char* end;
+    int background;
+    int length;
 
     rl_attempted_completion_function = my_completion;
 
-    while ((cmdline = readline(PROMPT)) != NULL) {
+    while (1) {
 
-        if (cmdline[0] == '!' && cmdline[1] >= '0' && cmdline[1] <= '9') {
+        reap_jobs();
+
+        cmdline = readline(PROMPT);
+
+        if (cmdline == NULL) {
+            break;
+        }
+
+        if (cmdline[0] == '!' &&
+            cmdline[1] >= '0' && cmdline[1] <= '9') {
+
             int number = atoi(cmdline + 1);
             char* previous = get_history(number);
 
@@ -62,19 +77,62 @@ int main() {
             store_history_command(cmdline);
         }
 
-        if ((arglist = tokenize(cmdline)) != NULL) {
-            execute(arglist);
+        command = cmdline;
 
-            for (int i = 0; arglist[i] != NULL; i++) {
-                free(arglist[i]);
+        while (command != NULL) {
+
+            next = strchr(command, ';');
+
+            if (next != NULL) {
+                *next = '\0';
+                next++;
             }
 
-            free(arglist);
+            length = strlen(command);
+
+            if (length > 0) {
+                end = command + length - 1;
+
+                while (end >= command &&
+                       (*end == ' ' || *end == '\t')) {
+                    *end = '\0';
+                    end--;
+                }
+            }
+
+            background = 0;
+
+            length = strlen(command);
+
+            if (length > 0) {
+                end = command + length - 1;
+
+                if (*end == '&') {
+                    background = 1;
+                    *end = '\0';
+                }
+            }
+
+            arglist = tokenize(command);
+
+            if (arglist != NULL) {
+
+                execute(arglist, background, command);
+
+                for (int i = 0; arglist[i] != NULL; i++) {
+                    free(arglist[i]);
+                }
+
+                free(arglist);
+            }
+
+            command = next;
         }
 
         free(cmdline);
     }
 
     printf("\nShell exited.\n");
+
     return 0;
 }
