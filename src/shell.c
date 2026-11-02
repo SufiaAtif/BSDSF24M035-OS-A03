@@ -62,11 +62,26 @@ char** tokenize(char* cmdline) {
             break;
         }
 
-        start = cp;
-        len = 1;
+        /* Check whether the current character is an operator */
+        if (*cp == '<' || *cp == '>' || *cp == '|') {
 
-        while (*++cp != '\0' && !(*cp == ' ' || *cp == '\t')) {
+            arglist[argnum][0] = *cp;
+            arglist[argnum][1] = '\0';
+
+            cp++;
+            argnum++;
+            continue;
+        }
+
+        start = cp;
+        len = 0;
+
+        /* Read a word until space or an operator is found */
+        while (*cp != '\0' && *cp != ' ' && *cp != '\t'
+               && *cp != '<' && *cp != '>' && *cp != '|') {
+
             len++;
+            cp++;
         }
 
         if (len >= ARGLEN) {
@@ -80,6 +95,7 @@ char** tokenize(char* cmdline) {
     }
 
     if (argnum == 0) {
+
         for (int i = 0; i < MAXARGS + 1; i++) {
             free(arglist[i]);
         }
