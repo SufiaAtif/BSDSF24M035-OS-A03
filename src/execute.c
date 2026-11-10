@@ -59,6 +59,11 @@ int execute(char* arglist[], int background, char* command) {
         return 0;
     }
 
+    if (strcmp(arglist[0], "set") == 0) {
+        show_variables();
+        return 0;
+    }
+
     if (strcmp(arglist[0], "exit") == 0) {
         exit(0);
     }

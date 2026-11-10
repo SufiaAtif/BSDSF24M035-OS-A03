@@ -1,7 +1,7 @@
 #include "shell.h"
 
 char *commands[] = {
-    "cd", "exit", "help", "jobs", "history",
+    "cd", "exit", "help", "jobs", "history", "set",
     "ls", "pwd", "cat", "mkdir", "touch",
     "clear", "gcc", "make", NULL
 };
@@ -97,6 +97,7 @@ void run_block(char block[50][MAX_LEN], int count) {
         char **args = tokenize(command);
 
         if (args != NULL) {
+            expand_variables(args);
             execute(args, 0, block[i]);
 
             for (int j = 0; args[j] != NULL; j++) {
@@ -276,10 +277,18 @@ int main() {
                 }
             }
 
+            command = trim(command);
+
+            if (handle_assignment(command)) {
+                command = next;
+                continue;
+            }
+
             arglist = tokenize(command);
 
             if (arglist != NULL) {
 
+                expand_variables(arglist);
                 execute(arglist, background, command);
 
                 for (int i = 0; arglist[i] != NULL; i++) {

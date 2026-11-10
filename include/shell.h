@@ -23,6 +23,12 @@ typedef struct {
     char command[MAX_LEN];
 } Job;
 
+typedef struct Variable {
+    char *name;
+    char *value;
+    struct Variable *next;
+} Variable;
+
 char** tokenize(char* cmdline);
 int execute(char** arglist, int background, char* command);
 
@@ -34,5 +40,11 @@ void add_job(pid_t pid, char* command);
 void remove_job(pid_t pid);
 void show_jobs(void);
 void reap_jobs(void);
+
+void set_variable(char *name, char *value);
+char *get_variable(char *name);
+void show_variables(void);
+int handle_assignment(char *command);
+void expand_variables(char **arglist);
 
 #endif
