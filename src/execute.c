@@ -89,6 +89,7 @@ int execute(char* arglist[], int background, char* command) {
         printf("exit - Exit the shell\n");
         printf("cd - Change directory\n");
         printf("help - Display available commands\n");
+        printf("set - Display shell variables\n");
         printf("jobs - Display background jobs\n");
         printf("history - Display command history\n");
         return 0;
